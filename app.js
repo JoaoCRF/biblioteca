@@ -52,25 +52,30 @@ async function carregarLivros() {
 }
 
 async function excluirLivro(id) {
-    const { error } = await supabaseClient.from("livros").delete().eq("id", id);
-    if (error) alert("Erro ao excluir: " + error.message);
-    else carregarLivros();
-}
+    if (!confirm("Tem certeza que deseja excluir este livro e seu histórico?")) return;
 
-const formUsuario = document.getElementById("form-usuario");
-formUsuario.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nome = document.getElementById("nome-usuario").value;
-    const email = document.getElementById("email-usuario").value;
+    const { error: errEmp } = await supabaseClient
+        .from("emprestimos")
+        .delete()
+        .eq("livro_id", id);
 
-    const { error } = await supabaseClient.from("usuarios").insert([{ nome, email }]);
-    if (error) {
-        alert("Erro ao cadastrar usuário: " + error.message);
-    } else {
-        formUsuario.reset();
-        carregarUsuarios();
+    if (errEmp) {
+        alert("Erro ao limpar histórico de empréstimos: " + errEmp.message);
+        return;
     }
-});
+
+    const { error: errLivro } = await supabaseClient
+        .from("livros")
+        .delete()
+        .eq("id", id);
+
+    if (errLivro) {
+        alert("Erro ao excluir livro: " + errLivro.message);
+    } else {
+        carregarLivros();
+        carregarEmprestimos();
+    }
+}
 
 async function carregarUsuarios() {
     const lista = document.getElementById("lista-usuarios");
