@@ -98,7 +98,7 @@ async function excluirUsuario(id) {
     if (error) alert("Erro ao excluir: " + error.message);
     else carregarUsuarios();
 }
-
+//////
 const formEmprestimo = document.getElementById("form-emprestimo");
 formEmprestimo.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -129,6 +129,7 @@ async function carregarEmprestimos() {
         .from("emprestimos")
         .select(`
             id,
+            livro_id,
             devolvido,
             data_emprestimo,
             livros (titulo),
@@ -136,20 +137,57 @@ async function carregarEmprestimos() {
         `)
         .eq("devolvido", false);
 
-    if (error) return console.error(error);
+    if (error) {
+        console.error("Erro ao carregar empréstimos:", error);
+        return;
+    }
+
+    if (!emprestimos || emprestimos.length === 0) {
+        lista.innerHTML = "<li>Nenhum empréstimo ativo no momento.</li>";
+        return;
+    }
 
     emprestimos.forEach(e => {
         const li = document.createElement("li");
-        li.innerHTML = `Livro: <strong>${e.livros?.titulo}</strong> | Usuário: <strong>${e.usuarios?.nome}</strong> (Data: ${e.data_emprestimo})
-                        <button onclick="registrarDevolucao(${e.id}, ${e.livros})">Devolver</button>`;
+        // Tratamento seguro caso os dados venham como objeto do relacionamento
+        const nomeLivro = e.livros?.titulo || "Livro desconhecido";
+        const nomeUsuario = e.usuarios?.nome || "Usuário desconhecido";
+
+        li.innerHTML = `<div>Livro: <strong>${nomeLivro}</strong> | Usuário: <strong>${nomeUsuario}</strong></div>
+                        <button onclick="registrarDevolucao(${e.id}, ${e.livro_id})">Devolver</button>`;
         lista.appendChild(li);
     });
 }
 
 async function registrarDevolucao(emprestimoId, livroId) {
-    await supabaseClient.from("emprestimos").update({ devolvido: true, data_devolucao: new Date().toISOString() }).eq("id", emprestimoId);
-    
-    location.reload(); 
+    if (!confirm("Confirmar a devolução deste livro?")) return;
+
+    const { error: errEmp } = await supabaseClient
+        .from("emprestimos")
+        .update({ 
+            devolvido: true, 
+            data_devolucao: new Date().toISOString().split('T')[0] 
+        })
+        .eq("id", emprestimoId);
+
+    if (errEmp) {
+        alert("Erro ao registrar devolução: " + errEmp.message);
+        return;
+    }
+
+    // 2. Tornar o livro disponível novamente na tabela de livros
+    const { error: errLivro } = await supabaseClient
+        .from("livros")
+        .update({ disponivel: true })
+        .eq("id", livroId);
+
+    if (errLivro) {
+        alert("Erro ao atualizar status do livro: " + errLivro.message);
+    } else {
+        // Atualiza as listas na tela
+        carregarLivros();
+        carregarEmprestimos();
+    }
 }
 
 function openTab(tabName) {
