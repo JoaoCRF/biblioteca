@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Biblioteca</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Biblioteca</h1>
+
+        <nav class="tabs-nav">
+            <button class="tab-btn active" onclick="openTab('livros')">Livros</button>
+            <button class="tab-btn" onclick="openTab('usuarios')">Usuários</button>
+            <button class="tab-btn" onclick="openTab('emprestimos')">Empréstimos</button>
+        </nav>
+
+        <section id="tab-livros" class="card tab-content active">
+            <h2>Gerenciar Livros</h2>
+            <form id="form-livro">
+                <input type="text" id="titulo-livro" placeholder="Título do Livro" required>
+                <input type="text" id="autor-livro" placeholder="Autor" required>
+                <input type="number" id="ano-livro" placeholder="Ano" required>
+                <button type="submit">Cadastrar Livro</button>
+            </form>
+            <h3>Lista de Livros</h3>
+            <ul id="lista-livros"></ul>
+        </section>
+
+        <section id="tab-usuarios" class="card tab-content">
+            <h2>Gerenciar Usuários</h2>
+            <form id="form-usuario">
+                <input type="text" id="nome-usuario" placeholder="Nome Completo" required>
+                <input type="email" id="email-usuario" placeholder="E-mail" required>
+                <button type="submit">Cadastrar Usuário</button>
+            </form>
+            <h3>Lista de Usuários</h3>
+            <ul id="lista-usuarios"></ul>
+        </section>
+
+        <section id="tab-emprestimos" class="card tab-content">
+            <h2>Registrar Empréstimo</h2>
+            <form id="form-emprestimo">
+                <select id="select-livro" required>
+                    <option value="">Selecione o Livro Disponível</option>
+                </select>
+                <select id="select-usuario" required>
+                    <option value="">Selecione o Usuário</option>
+                </select>
+                <button type="submit">Realizar Empréstimo</button>
+            </form>
+            <h3>Histórico de Empréstimos Ativos</h3>
+            <ul id="lista-emprestimos"></ul>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
